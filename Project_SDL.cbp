@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Project SDL" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/Project SDL" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add directory="Tools/headers" />
+					<Add directory="include" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/Project SDL" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add directory="include" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Weffc++" />
+			<Add option="-std=c++11" />
+			<Add option="-Wextra" />
+			<Add option="-Wall" />
+			<Add directory="Tools/SDL/SDL_image-1.2.12/include" />
+			<Add directory="Tools/SDL/SDL_mixer-1.2.12/include" />
+			<Add directory="Tools/SDL/SDL_net-1.2.8/include" />
+			<Add directory="Tools/SDL/SDL_ttf-2.0.11/include" />
+			<Add directory="Tools/SDL/SDL-1.2.15/include/SDL" />
+			<Add directory="Tools/SDL/SDL-1.2.15/include" />
+		</Compiler>
+		<Linker>
+			<Add option="-lmingw32 -lSDLmain -lSDL -lSDL_image" />
+			<Add directory="Tools/SDL/SDL_image-1.2.12/lib/x86" />
+			<Add directory="Tools/SDL/SDL_mixer-1.2.12/lib/x86" />
+			<Add directory="Tools/SDL/SDL_net-1.2.8/lib/x86" />
+			<Add directory="Tools/SDL/SDL_ttf-2.0.11/lib/x86" />
+			<Add directory="Tools/SDL/SDL-1.2.15/lib" />
+		</Linker>
+		<ExtraCommands>
+			<Add after='cmd /c copy &quot;$(PROJECT_DIR)Tools\SDL\SDL-1.2.15\bin\*.dll&quot; &quot;$(PROJECT_DIR)$(TARGET_OUTPUT_DIR)&quot;' />
+			<Add after='cmd /c copy &quot;$(PROJECT_DIR)Tools\SDL\SDL_image-1.2.12\lib\x86\*.dll&quot; &quot;$(PROJECT_DIR)$(TARGET_OUTPUT_DIR)&quot;' />
+		</ExtraCommands>
+		<Unit filename="Src/Missile.cpp" />
+		<Unit filename="Src/Monster.cpp" />
+		<Unit filename="Src/Player.cpp" />
+		<Unit filename="Src/Shooter.cpp" />
+		<Unit filename="Src/Sprite.cpp" />
+		<Unit filename="Src/main.cpp" />
+		<Unit filename="Src/structures.cpp" />
+		<Unit filename="bin/Debug/stderr.txt" />
+		<Unit filename="bin/Debug/stdout.txt" />
+		<Unit filename="bin/Release/stderr.txt" />
+		<Unit filename="include/Missile.h" />
+		<Unit filename="include/Monster.h" />
+		<Unit filename="include/Player.h" />
+		<Unit filename="include/Shooter.h" />
+		<Unit filename="include/Sprite.h" />
+		<Unit filename="include/structures.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
