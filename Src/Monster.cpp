@@ -1,8 +1,7 @@
 #include "Monster.h"
 
-Monster::Monster (Coordinate position, Coordinate maxSpeed, Image graphic, Image hitbox, string name): Shooter(position, maxSpeed, graphic, hitbox, name)
+Monster::Monster (Coordinate position, Coordinate maxSpeed, Image graphic, Image hitbox, string name): Shooter(position, maxSpeed, graphic, hitbox, name), motionCounter(0)
 {
-    motionCounter = 0;
 }
 
 void Monster::Move()

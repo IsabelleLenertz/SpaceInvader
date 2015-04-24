@@ -16,6 +16,9 @@
 					<Add directory="Tools/headers" />
 					<Add directory="include" />
 				</Compiler>
+				<Linker>
+					<Add library="Tools\SDL\SDL_ttf-2.0.11\lib\x86\SDL_ttf.lib" />
+				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/Project SDL" prefix_auto="1" extension_auto="1" />
@@ -28,6 +31,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add library="Tools\SDL\SDL_ttf-2.0.11\lib\x86\SDL_ttf.lib" />
 				</Linker>
 			</Target>
 		</Build>
