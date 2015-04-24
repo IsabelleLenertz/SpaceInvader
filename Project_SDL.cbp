@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="Project SDL" />
+		<Option title="Space Invader" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>

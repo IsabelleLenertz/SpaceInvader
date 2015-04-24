@@ -4,3 +4,8 @@ Monster::Monster (Coordinate position, Coordinate maxSpeed, Image graphic, Image
 {
     //ctor
 }
+
+void Monster::Move()
+{
+    //this->m_position.x += this->m_maxSpeed.x;
+}

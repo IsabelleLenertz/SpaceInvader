@@ -8,6 +8,8 @@ class Monster : public Shooter
 {
     public:
         Monster(Coordinate position, Coordinate maxSpeed, Image graphic, Image hitbox, string name);
+        virtual void Move();
+
 
     private:
 };

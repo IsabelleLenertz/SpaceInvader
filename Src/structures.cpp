@@ -31,3 +31,18 @@ void updateInput (Input* input)
         }
     }
 }
+
+//void collision (vector <Sprite*> & sprites)
+//{
+//    for(vector<Sprite*>::iterator it=sprites.begin() ; it < sprites.end(); it++ )
+//    {
+//        for ( vector<Sprite*>::iterator currentSprite=sprites.begin() ; currentSprite < sprites.end(); currentSprite++)
+//        {
+//            if
+//            {
+//                /// check if there is a collision between it and current sprite.
+//            }
+//        }
+//    }
+//
+//}

@@ -26,50 +26,67 @@
 #include "Shooter.h"
 #include "Monster.h"
 #include "Player.h"
+#include "Missile.h"
 
 
 using namespace std;
 
 /// Screen dimensions
+/// Set as global variable because it will be used by most of the classes and functions.
 const int SCREEN_WIDTH=600;
 const int SCREEN_HEIGHT=450;
 
-/// Pointers to the display window and the background
+/// Pointers to the display window and the background.
+/// Set as global variable because it will be used by most of the classes and functions.
 SDL_Surface* pScreen = NULL;
 
 
-void InitSDL();
-//void windowAndBackground(SDL_Surface* Window, SDL_Surface* background, SDL_Surface* backgroundDisplay);
+
+/** Initialize SDL (SDL_INIT_EVERYTHING) and the png Video mode (IMG_INIT_PNG).
+*/
+void initSDL();
+
+/** Create the windowed environment (Screen), load and display the background.
+pTempBackground is a pointer that will be set to the temporary background.
+pBackground is a pointer that will be set to the actual usable background.
+*/
+void windowAndBackground(SDL_Surface* & pTempBackround, SDL_Surface* & pBackground);
+
+/** Go through the dynamic list of sprites, look for collisions and erase the colliding sprites.
+Return 1 if a collision occurred.
+*/
+int detectCollision (vector <Sprite*> & sprites);
+
 
 int main(int argc, char* argv[])
 {
-    ///display surface
+    /// Initiate the score counter.
+    int score = 0;
+
+    /// Create the pointer to the future SDL_Surface storing the background.
     SDL_Surface* pTempBackround = NULL;
     SDL_Surface* pBackground = NULL;
 
-    ///Input structure storing the user's input
+    ///Create the Input structure storing the user's input and set it to false.
     Input inputStorage;
     memset(&inputStorage, 0, sizeof(inputStorage)); /// Set all the possible input to false.
 
     /// Initiate SDL
-    InitSDL();
+    initSDL();
 
-    /// Create windowed environment
-    pScreen = SDL_SetVideoMode(SCREEN_WIDTH,SCREEN_HEIGHT,0,SDL_DOUBLEBUF | SDL_HWSURFACE);
-    if (pScreen == NULL){
-        cerr << "Could not set up display surface!" << SDL_GetError() << endl;
-        exit(1);
-    }
+    /// Create the Screen, load and display the Background.
+    windowAndBackground(pTempBackround, pBackground);
 
-    /// Colors
+    /// Defines the colors than will be used later.
     SDL_Color white = {255, 255, 255, 255};
+    /// Convert a SDL_Color to make it usable in a specific window (our Screen).
     Uint32 whiteColor = SDL_MapRGB(pScreen->format, white.r, white.g, white.b);
 
-    /// Characteristics of the monsters
-    /// speed of the monsters
-    Coordinate monsterSpeed = {0,0}; /// Speed of the regular monsters
+    /// Define the characteristics of the monsters.
+    /// speed of the monsters.
+    Coordinate monsterSpeed = {10,0}; /// Speed of the regular monsters
 
-    /// monster type 1
+    /// monster type 1.
     Image monster1Image; // = {"img/enemy/Enemy2/enemy2_1.png", 25, 33, whiteColor, NULL, NULL};
     monster1Image.address = "img/enemy/Enemy2/enemy2_1.png";
     monster1Image.xSize = 25;
@@ -79,7 +96,7 @@ int main(int argc, char* argv[])
     monster1Hitbox.address = "img/enemy/Enemy2/enemy2_1_hitbox.png";
     Coordinate monster1Coordinate = {70, 20};
 
-    /// Characteristics of the player
+    /// Define the characteristics of the player.
     Image playerImage;
     playerImage.address = "img/player/tower1_1.png";
     playerImage.xSize = 28;
@@ -90,23 +107,13 @@ int main(int argc, char* argv[])
     Coordinate playerCoordinate = {286, 404};
     Coordinate playerMaxSpeed = {3, 0};
 
+    /// Define the characteristic of the missiles.
+    Image missileImage;
+    missileImage.address = "img/missile/missile.png";
+    missileImage.transparencyColor = whiteColor;
+    Image missileHitbox = missileImage;
+    Coordinate missileSpeed = {0, -1};
 
-    /// Display the background
-    pTempBackround = IMG_Load("img/background/bg600_450.png");
-    if (pTempBackround == NULL)
-    {
-        cerr << "Could not load the background: " << SDL_GetError() << endl;
-        exit (3);
-    }
-
-    pBackground = SDL_DisplayFormat(pTempBackround); // Convert the previous surface into a usable image and copy it into a new surface.
-    if (pBackground == NULL)
-    {
-        cerr << "could not convert the pTempBackround using SDL_DisplayFormat: " << SDL_GetError() << endl;
-    }
-
-    SDL_FreeSurface (pTempBackround);
-    SDL_BlitSurface (pBackground, NULL, pScreen, NULL);
 
     /// Create the monsters (5 raws of 15 monsters)
     vector <Sprite*> sprites;
@@ -117,6 +124,9 @@ int main(int argc, char* argv[])
             sprites.push_back(new Monster( { (monster1Coordinate.x + 35*i), monster1Coordinate.y + 35 * j} , monsterSpeed, monster1Image, monster1Hitbox, "Monster type 1") );
         }
     }
+
+    /// Create a vector to store the monster's missiles.
+    vector <Sprite*> monsterMissile;
 
     /// Create the player
     Player player(playerCoordinate, playerMaxSpeed, playerImage, playerHitbox, "Player");
@@ -148,18 +158,37 @@ int main(int argc, char* argv[])
         /// If the key space in down, shoot a missile
         else if (inputStorage.key[SDLK_SPACE])
         {
-            /// shoot a missile
+            /// Assure that the player shoots only one missile at a time.
+            inputStorage.key[SDLK_SPACE] = false;
+            /// Create a new sprite, Missile, each time the play hits SPACE.
+            player.ShootMissile (sprites, missileImage, missileHitbox, missileSpeed);
         }
 
+        /// Check for collision
 
         /// Draw the new screen
-        ///wait for an event
         SDL_BlitSurface (pBackground, NULL, pScreen, NULL);
-        /// Draw all the sprites at their new location
+        /// Draw all the sprites at their new location (monster and missile shoot by the player)
         for(vector<Sprite*>::iterator it=sprites.begin() ; it < sprites.end(); it++ )
         {
+            /// Shoot a missile if a random number is 1.
+            int ranShooting = rand()%1000;
+            if (ranShooting == 1)
+            {
+                (*it)->ShootMissile (monsterMissile, missileImage, missileHitbox, {-missileSpeed.x, -missileSpeed.y});
+            }
+            /// Move the Sprites
+            (*it)->Move();
             (*it)->draw();
         }
+
+        /// Draw and move the missiles shot by the monsters.
+        for(vector<Sprite*>::iterator it=monsterMissile.begin() ; it < monsterMissile.end(); it++ )
+        {
+            (*it)->Move();
+            (*it)->draw();
+        }
+        score += detectCollision (sprites);
         player.draw();
         /// Update the screen
         SDL_Flip(pScreen);
@@ -168,17 +197,20 @@ int main(int argc, char* argv[])
         SDL_Delay(10);
     }
 
+    cout << score << endl;
+    /// Free the surfaces
     SDL_FreeSurface(pScreen);
     SDL_FreeSurface(pBackground);
     SDL_Quit();
 
-    ///normal termination
+    /// Indicate normal termination
     cout << "Terminating normally." << endl;
-
     return EXIT_SUCCESS;
 }
 
-void InitSDL()
+/** Initialize SDL (SDL_INIT_EVERYTHING) and the png Video mode (IMG_INIT_PNG).
+*/
+void initSDL()
 {
     ///initialize SDL
     if (SDL_Init(SDL_INIT_EVERYTHING)== -1)
@@ -198,25 +230,55 @@ void InitSDL()
     }
 }
 
-//void windowAndBackground(SDL_Surface* pWindow, SDL_Surface* pBackground, SDL_Surface* pBackgroundDisplay)
-//{
-//    /// create windowed environment
-//    pWindow = SDL_SetVideoMode(SCREEN_WIDTH,SCREEN_HEIGHT,0,SDL_ANYFORMAT);
-//    if (pWindow == NULL){
-//        cerr << "Could not set up display surface!" << SDL_GetError() << endl;
-//        exit(1);
-//    }
-//
-//    /// Display the background
-//    pBackground = IMG_Load("img/background/bg600_450.png");
-//    if (pBackground == NULL){
-//        cerr << "Could not load the background: " << SDL_GetError() << endl;
-//        exit (3);
-//    }
-//    pBackgroundDisplay = SDL_DisplayFormat(pBackground); // Convert the previous surface into a usable image and copy it into a new surface.
-//    if (pBackgroundDisplay == NULL){
-//        cerr << "could not convert the pTempBackround using SDL_DisplayFormat: " << SDL_GetError() << endl;
-//    }
-//    SDL_FreeSurface (pBackground);
-//    SDL_BlitSurface (pBackgroundDisplay, NULL, pWindow, NULL);
-//}
+/** Create the windowed environment (Screen), load and display the background.
+pTempBackground is a pointer that will be set to the temporary background.
+pBackground is a pointer that will be set to the actual usable background.
+*/
+void windowAndBackground(SDL_Surface* & pTempBackround, SDL_Surface* & pBackground)
+{
+    /// Create windowed environment
+    pScreen = SDL_SetVideoMode(SCREEN_WIDTH,SCREEN_HEIGHT,0,SDL_DOUBLEBUF | SDL_HWSURFACE);
+    if (pScreen == NULL){
+        cerr << "Could not set up display surface!" << SDL_GetError() << endl;
+        exit(1);
+    }
+
+    /// Display the background
+    pTempBackround = IMG_Load("img/background/bg600_450.png");
+    if (pTempBackround == NULL)
+    {
+        cerr << "Could not load the background: " << SDL_GetError() << endl;
+        exit (3);
+    }
+    /// Convert the previous surface into a usable image and copy it into a new surface.
+    pBackground = SDL_DisplayFormat(pTempBackround);
+    if (pBackground == NULL)
+    {
+        cerr << "could not convert the pTempBackground using SDL_DisplayFormat: " << SDL_GetError() << endl;
+    }
+
+    SDL_FreeSurface (pTempBackround);
+    SDL_BlitSurface (pBackground, NULL, pScreen, NULL);
+}
+
+int detectCollision (vector <Sprite*> & sprites)
+{
+    /// Go through the list of sprite.
+    for(vector<Sprite*>::iterator currentSprite=sprites.begin() ; currentSprite < sprites.end(); currentSprite++ )
+    {
+        /// For each sprite, check if there is a collision with another.
+        for(vector<Sprite*>::iterator it=sprites.begin() ; it < sprites.end(); it++ )
+        {
+            if ( currentSprite != it )
+            {
+                if ( ((*currentSprite)->collision((*it)->getPosition(),(*it)->getHitbox()) ) == true )
+                {
+                    currentSprite = sprites.erase(currentSprite);
+                    it = sprites.erase(it);
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}

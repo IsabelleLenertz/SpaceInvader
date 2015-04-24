@@ -5,6 +5,8 @@
 
 using namespace std;
 
+
+
 class Sprite
 {
     public:
@@ -17,9 +19,16 @@ class Sprite
     /// Function use to modify the coordinate.
     virtual void Move();
 
-    /// Function use to read the position and the speed of a sprite.
+    /// Function use to detect collision with another sprite.
+    virtual bool collision (Coordinate otherSpritesPosition, Image otherSpritesHitbox);
+
+    /// Function use to read the position, the speed, and the hit box of a sprite.
     virtual Coordinate getPosition() const;
     virtual Coordinate getSpeed() const;
+    virtual Image getHitbox() const;
+
+    ///To be left empty. nothing happens if the sprite is not a shooter.
+    virtual void ShootMissile (vector <Sprite*> & sprites, Image missileImage, Image missileHitbox, Coordinate missileSpeed);
 
 
     protected:

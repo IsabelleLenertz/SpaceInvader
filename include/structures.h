@@ -4,10 +4,12 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include "sdl.h"
 
-
 using namespace std;
+
+class Sprite;
 
 /// Used to defined the coordinates or the maximum speed of a sprite.
 struct Coordinate
@@ -42,6 +44,8 @@ struct Input
 
 /** Update the array representing the keyboard by treating all the waiting events */
 void updateInput (Input* input);
+
+void collision (vector <Sprite*> & sprites);
 
 
 #endif

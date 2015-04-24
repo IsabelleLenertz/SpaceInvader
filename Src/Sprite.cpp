@@ -2,6 +2,7 @@
 #include "structures.h"
 #include "sdl.h"
 #include "sdl_image.h"
+#include "Shooter.h"
 #include <string>
 
 /// Pointers to the display window and the background
@@ -48,7 +49,7 @@ Sprite::Sprite(Coordinate position, Coordinate maxSpeed, Image graphic, Image hi
     }
 
     /// Convert the image into a usable surface and check for error.
-    this->m_hitbox.pImage = SDL_DisplayFormat(pLoadingImage);
+    this->m_hitbox.pImage = SDL_DisplayFormat(pLoadingHitbox);
     if (this->m_hitbox.pImage == NULL) {
         cerr << "Could not convert " << this->m_name << " hit box: " << SDL_GetError();
     }
@@ -83,6 +84,33 @@ void Sprite::Move()
 
 }
 
+// Function use to detect collision with another sprite.
+bool Sprite::collision (Coordinate otherSpritesPosition, Image otherSpritesHitbox)
+{
+    if ( m_position.y == (otherSpritesPosition.y + otherSpritesHitbox.xSize) )
+    {
+        if ( (m_position.x < (otherSpritesPosition.x + otherSpritesHitbox.xSize)) && (m_position.x > otherSpritesPosition.x) )
+        {
+            return true;
+        }
+
+        if ( ((m_position.x + m_hitbox.xSize) < (otherSpritesPosition.x + otherSpritesHitbox.xSize)) && ((m_position.x + m_hitbox.xSize) > otherSpritesPosition.x) )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+}
+
+
 Coordinate Sprite::getPosition() const
 {
     return this->m_position;
@@ -91,4 +119,15 @@ Coordinate Sprite::getPosition() const
 Coordinate Sprite::getSpeed() const
 {
     return this->m_maxSpeed;
+}
+
+Image Sprite::getHitbox() const
+{
+    return this->m_hitbox;
+}
+
+///To be left empty. nothing happens if the sprite is not a shooter.
+void Sprite::ShootMissile (vector <Sprite*> & sprites, Image missileImage, Image missileHitbox, Coordinate missileSpeed)
+{
+
 }
