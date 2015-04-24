@@ -126,8 +126,34 @@ Image Sprite::getHitbox() const
     return this->m_hitbox;
 }
 
-///To be left empty. nothing happens if the sprite is not a shooter.
-void Sprite::ShootMissile (vector <Sprite*> & sprites, Image missileImage, Image missileHitbox, Coordinate missileSpeed)
+int Sprite::DetectCollision (vector <Sprite*> & sprites)
 {
+    /// Go through the list of sprite.
+    for(vector<Sprite*>::iterator currentSprite=sprites.begin() ; currentSprite < sprites.end(); currentSprite++ )
+    {
+        /// For each sprite, check if there is a collision with another.
+        for(vector<Sprite*>::iterator it=sprites.begin() ; it < sprites.end(); it++ )
+        {
+            if ( currentSprite != it )
+            {
+                if ( ((*currentSprite)->collision((*it)->getPosition(),(*it)->getHitbox()) ) == true )
+                {
+                    /// Delete the element
+                    delete *currentSprite;
+                    /// Remove the reference from the list
+                    currentSprite = sprites.erase(currentSprite);
 
+                    /// Delete the element
+                    delete *it;
+                    /// Remove the reference from the list
+                    it = sprites.erase(it);
+
+                    /// To simplify, we will only check one collision at a time.
+                    /// This allows us to delete an element of a list we are iterating on.
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
 }

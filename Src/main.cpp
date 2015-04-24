@@ -21,6 +21,7 @@
 #include <vector>
 #include "sdl.h"
 #include "sdl_image.h"
+#include "sdl_ttf.h"
 #include "structures.h"
 #include "Sprite.h"
 #include "Shooter.h"
@@ -40,7 +41,8 @@ const int SCREEN_HEIGHT=450;
 /// Set as global variable because it will be used by most of the classes and functions.
 SDL_Surface* pScreen = NULL;
 
-
+/// Global variable containing the user input
+Input inputStorage;
 
 /** Initialize SDL (SDL_INIT_EVERYTHING) and the png Video mode (IMG_INIT_PNG).
 */
@@ -52,11 +54,12 @@ pBackground is a pointer that will be set to the actual usable background.
 */
 void windowAndBackground(SDL_Surface* & pTempBackround, SDL_Surface* & pBackground);
 
+void DisplayScore(SDL_Surface* pScreen, TTF_Font* font, int score);
+
 /** Go through the dynamic list of sprites, look for collisions and erase the colliding sprites.
 Return 1 if a collision occurred.
 */
 int detectCollision (vector <Sprite*> & sprites);
-
 
 int main(int argc, char* argv[])
 {
@@ -68,11 +71,13 @@ int main(int argc, char* argv[])
     SDL_Surface* pBackground = NULL;
 
     ///Create the Input structure storing the user's input and set it to false.
-    Input inputStorage;
+
     memset(&inputStorage, 0, sizeof(inputStorage)); /// Set all the possible input to false.
 
     /// Initiate SDL
     initSDL();
+
+
 
     /// Create the Screen, load and display the Background.
     windowAndBackground(pTempBackround, pBackground);
@@ -82,11 +87,15 @@ int main(int argc, char* argv[])
     /// Convert a SDL_Color to make it usable in a specific window (our Screen).
     Uint32 whiteColor = SDL_MapRGB(pScreen->format, white.r, white.g, white.b);
 
+    /// Initialize the font for the score display.
+    TTF_Font* font = TTF_OpenFont("img/OpenSans-Bold.ttf", 32);
+
+
     /// Define the characteristics of the monsters.
     /// speed of the monsters.
-    Coordinate monsterSpeed = {10,0}; /// Speed of the regular monsters
+    Coordinate monsterSpeed = {1,0}; /// Speed of the regular monsters
 
-    /// monster type 1.
+    /// Definition of monster type 1.
     Image monster1Image; // = {"img/enemy/Enemy2/enemy2_1.png", 25, 33, whiteColor, NULL, NULL};
     monster1Image.address = "img/enemy/Enemy2/enemy2_1.png";
     monster1Image.xSize = 25;
@@ -94,7 +103,7 @@ int main(int argc, char* argv[])
     monster1Image.transparencyColor = whiteColor;
     Image monster1Hitbox = monster1Image;
     monster1Hitbox.address = "img/enemy/Enemy2/enemy2_1_hitbox.png";
-    Coordinate monster1Coordinate = {70, 20};
+    Coordinate monster1Coordinate = {5, 20};
 
     /// Define the characteristics of the player.
     Image playerImage;
@@ -121,7 +130,7 @@ int main(int argc, char* argv[])
     {
         for (uint16_t j = 0; j < 5; j++)
         {
-            sprites.push_back(new Monster( { (monster1Coordinate.x + 35*i), monster1Coordinate.y + 35 * j} , monsterSpeed, monster1Image, monster1Hitbox, "Monster type 1") );
+            sprites.push_back(new Monster( { (int16_t)(monster1Coordinate.x + 35*i), (int16_t)(monster1Coordinate.y + 35 * j)} , monsterSpeed, monster1Image, monster1Hitbox, "Monster type 1") );
         }
     }
 
@@ -130,7 +139,7 @@ int main(int argc, char* argv[])
 
     /// Create the player
     Player player(playerCoordinate, playerMaxSpeed, playerImage, playerHitbox, "Player");
-
+    monsterMissile.push_back(&player);
 
     /// set caption
     SDL_WM_SetCaption("Monster Shooting", NULL);
@@ -144,39 +153,19 @@ int main(int argc, char* argv[])
         /// Check all the waiting inputs and update inputStorage
         updateInput(&inputStorage);
 
-        /// If the left arrow if down, move the player left
-        if (inputStorage.key[SDLK_LEFT])
-        {
-            player.moveLeft();
-        }
-
-        /// If the right arrow if down, move the player right
-        else if (inputStorage.key[SDLK_RIGHT])
-        {
-            player.moveRight();
-        }
-        /// If the key space in down, shoot a missile
-        else if (inputStorage.key[SDLK_SPACE])
-        {
-            /// Assure that the player shoots only one missile at a time.
-            inputStorage.key[SDLK_SPACE] = false;
-            /// Create a new sprite, Missile, each time the play hits SPACE.
-            player.ShootMissile (sprites, missileImage, missileHitbox, missileSpeed);
-        }
-
-        /// Check for collision
-
         /// Draw the new screen
         SDL_BlitSurface (pBackground, NULL, pScreen, NULL);
+
+        /// Update the score
+        DisplayScore(pScreen, font, score);
+
         /// Draw all the sprites at their new location (monster and missile shoot by the player)
         for(vector<Sprite*>::iterator it=sprites.begin() ; it < sprites.end(); it++ )
         {
-            /// Shoot a missile if a random number is 1.
-            int ranShooting = rand()%1000;
-            if (ranShooting == 1)
-            {
-                (*it)->ShootMissile (monsterMissile, missileImage, missileHitbox, {-missileSpeed.x, -missileSpeed.y});
-            }
+            /// If you are a shooter, perform an action.
+            Shooter *sht = dynamic_cast<Shooter*>(*it);
+            if (sht) sht->Action(monsterMissile, missileImage, missileHitbox, { (int16_t) -missileSpeed.x, (int16_t) -missileSpeed.y});
+
             /// Move the Sprites
             (*it)->Move();
             (*it)->draw();
@@ -185,14 +174,22 @@ int main(int argc, char* argv[])
         /// Draw and move the missiles shot by the monsters.
         for(vector<Sprite*>::iterator it=monsterMissile.begin() ; it < monsterMissile.end(); it++ )
         {
+             /// If you are a shooter, perform an action.
+            Shooter *sht = dynamic_cast<Shooter*>(*it);
+            if (sht) sht->Action(sprites, missileImage, missileHitbox, { (int16_t) missileSpeed.x, (int16_t) missileSpeed.y});
+
             (*it)->Move();
             (*it)->draw();
         }
-        score += detectCollision (sprites);
-        player.draw();
+
+        score += Sprite::DetectCollision(sprites);
+
+        if (Sprite::DetectCollision(monsterMissile)){
+           return 0;
+        }
+
         /// Update the screen
         SDL_Flip(pScreen);
-
         /// Wait a little
         SDL_Delay(10);
     }
@@ -221,6 +218,13 @@ void initSDL()
     else
     {
         cout << "SDL initialized properly!" << endl;
+    }
+
+    // Initialize SDL_ttf library
+    if (TTF_Init() != 0)
+    {
+        cerr << "TTF_Init() Failed: " << TTF_GetError() << endl;
+        exit(1);
     }
 
     /// Initiates the png Video mode
@@ -261,24 +265,24 @@ void windowAndBackground(SDL_Surface* & pTempBackround, SDL_Surface* & pBackgrou
     SDL_BlitSurface (pBackground, NULL, pScreen, NULL);
 }
 
-int detectCollision (vector <Sprite*> & sprites)
-{
-    /// Go through the list of sprite.
-    for(vector<Sprite*>::iterator currentSprite=sprites.begin() ; currentSprite < sprites.end(); currentSprite++ )
-    {
-        /// For each sprite, check if there is a collision with another.
-        for(vector<Sprite*>::iterator it=sprites.begin() ; it < sprites.end(); it++ )
-        {
-            if ( currentSprite != it )
-            {
-                if ( ((*currentSprite)->collision((*it)->getPosition(),(*it)->getHitbox()) ) == true )
-                {
-                    currentSprite = sprites.erase(currentSprite);
-                    it = sprites.erase(it);
-                    return 1;
-                }
-            }
-        }
-    }
-    return 0;
+void DisplayScore(SDL_Surface* pScreen, TTF_Font* font, int score){
+
+    /// Create the score string
+    char str[250];
+
+    SDL_Color white = {255, 255, 255, 255};
+
+    /// Format the score string
+    snprintf(str, sizeof(str), "Score : %d", score);
+
+    /// Create the text surface
+    SDL_Surface* display_level = TTF_RenderText_Solid (font, str, white);
+
+    /// select the display offset
+    SDL_Rect offset;
+    offset.y = 400;
+    offset.x = 50;
+
+    SDL_BlitSurface (display_level, NULL, pScreen, &offset);
+
 }
