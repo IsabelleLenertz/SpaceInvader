@@ -5,9 +5,13 @@
 #include "Shooter.h"
 #include <string>
 
-/// Pointers to the display window and the background
+/// Pointers to the display window and the background.
 extern SDL_Surface* pScreen;
 extern SDL_Surface* pBackground;
+
+/// Dimensions of the screen.
+extern const int SCREEN_HEIGHT;
+extern const int SCREEN_WIDTH;
 
 using namespace std;
 
@@ -155,5 +159,45 @@ int Sprite::DetectCollision (vector <Sprite*> & sprites)
             }
         }
     }
+    return 0;
+}
+
+/**Function used to destroy the sprites if they go outside the screen.
+Return 1 if an element was destroyed.
+Return 0 if no sprite was destroyed.
+*/
+
+int Sprite :: DestroyOutOfScreen(vector <Sprite*> & sprites)
+{
+    const int SCREEN_WIDTH = 600;
+    const int SCREEN_HEIGHT = 450;
+
+    for(vector<Sprite*>::iterator it=sprites.begin() ; it < sprites.end(); it++ )
+    {
+        if ((*it)->m_position.x < 0 || ((*it)->m_position.x + (*it)->m_graphic.xSize) > SCREEN_WIDTH )
+        {
+            /// Delete the element
+            delete *it;
+            /// Remove the reference from the list
+            it = sprites.erase(it);
+            /// To simplify, we will check only for 1 sprite out of the screen at the time.
+            /// This allows us to delete an element of a list we are iterating on.
+            /// return 1 if an element was destroyed.
+            return 1;
+        }
+
+        if ( (*it)->m_position.y > SCREEN_HEIGHT || (*it)->m_position.y < 0 )
+        {
+            /// Delete the element
+            delete *it;
+            /// Remove the reference from the list
+            it = sprites.erase(it);
+            /// To simplify, we will check only for 1 sprite out of the screen at the time.
+            /// This allows us to delete an element of a list we are iterating on.
+            /// return 1 if an element was destroyed.
+            return 1;
+        }
+    }
+    /// Return 0 if no sprite was destroyed.
     return 0;
 }

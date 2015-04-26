@@ -30,6 +30,10 @@ class Sprite
     /// Function used to detect sprite collision within a list.
     static int DetectCollision (vector <Sprite*> & sprites);
 
+    /// Function used to destroy the sprites if they go outside the screen.
+    static int DestroyOutOfScreen(vector <Sprite*> & sprites);
+
+
     protected:
     Coordinate m_position;
     Coordinate m_maxSpeed;

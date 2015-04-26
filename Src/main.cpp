@@ -34,7 +34,7 @@ using namespace std;
 
 /// Screen dimensions
 /// Set as global variable because it will be used by most of the classes and functions.
-const int SCREEN_WIDTH=600;
+const int SCREEN_WIDTH = 600;
 const int SCREEN_HEIGHT=450;
 
 /// Pointers to the display window and the background.
@@ -184,10 +184,15 @@ int main(int argc, char* argv[])
 
         score += Sprite::DetectCollision(sprites);
 
-        if (Sprite::DetectCollision(monsterMissile)){
+        if (Sprite::DetectCollision(monsterMissile))
+        {
            return 0;
         }
 
+        while ( (Sprite::DestroyOutOfScreen(sprites)) == 1)
+        {
+
+        }
         /// Update the screen
         SDL_Flip(pScreen);
         /// Wait a little
