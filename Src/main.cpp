@@ -191,7 +191,9 @@ int main(int argc, char* argv[])
 
         while ( (Sprite::DestroyOutOfScreen(sprites)) == 1)
         {
-
+        }
+        while ( (Sprite::DestroyOutOfScreen(monsterMissile)) == 1)
+        {
         }
         /// Update the screen
         SDL_Flip(pScreen);

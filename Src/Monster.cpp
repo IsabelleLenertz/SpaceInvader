@@ -17,7 +17,7 @@ void Monster::Move()
     this->motionCounter ++;
 
     if (this->motionCounter > 80)
-        this->motionCounter = -80;
+        this->motionCounter = -79;
 }
 
 void Monster::Action(vector <Sprite*> & sprites, Image missileImage, Image missileHitbox, Coordinate missileSpeed){
