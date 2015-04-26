@@ -91,14 +91,14 @@ void Sprite::Move()
 // Function use to detect collision with another sprite.
 bool Sprite::collision (Coordinate otherSpritesPosition, Image otherSpritesHitbox)
 {
-    if ( m_position.y == (otherSpritesPosition.y + otherSpritesHitbox.xSize) )
+    if ( m_position.y <= (otherSpritesPosition.y + otherSpritesHitbox.xSize) && m_position.y >= otherSpritesPosition.y)
     {
-        if ( (m_position.x < (otherSpritesPosition.x + otherSpritesHitbox.xSize)) && (m_position.x > otherSpritesPosition.x) )
+        if ( (m_position.x <= (otherSpritesPosition.x + otherSpritesHitbox.xSize)) && (m_position.x >= otherSpritesPosition.x) )
         {
             return true;
         }
 
-        if ( ((m_position.x + m_hitbox.xSize) < (otherSpritesPosition.x + otherSpritesHitbox.xSize)) && ((m_position.x + m_hitbox.xSize) > otherSpritesPosition.x) )
+        if ( ((m_position.x + m_hitbox.xSize) <= (otherSpritesPosition.x + otherSpritesHitbox.xSize)) && ((m_position.x + m_hitbox.xSize) >= otherSpritesPosition.x) )
         {
             return true;
         }
@@ -174,7 +174,8 @@ int Sprite :: DestroyOutOfScreen(vector <Sprite*> & sprites)
 
     for(vector<Sprite*>::iterator it=sprites.begin() ; it < sprites.end(); it++ )
     {
-        if ((*it)->m_position.x < 0 || ((*it)->m_position.x + (*it)->m_graphic.xSize) > SCREEN_WIDTH )
+        /// Make sure the sprites can go a little (10 pixels) out of the screen without being destroyed.
+        if ((*it)->m_position.x < -10 || ((*it)->m_position.x + (*it)->m_graphic.xSize) > (SCREEN_WIDTH + 10) )
         {
             /// Delete the element
             delete *it;
